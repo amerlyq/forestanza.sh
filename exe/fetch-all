@@ -1,0 +1,37 @@
+#!/bin/bash -e
+set -o pipefail
+trap 'exit' INT
+PATH=$(readlink -e "${0%/*}"):$PATH
+
+while getopts 'c:f:n:u:' o; do case $o
+in c) cd "$OPTARG"
+;; f) fmt=$OPTARG
+;; n) nm=$OPTARG
+;; u) url=$OPTARG
+;; *) exit 1
+esac; done; shift $((OPTIND-1))
+
+[[ $fmt ]] || fmt='%s/01-html/%03d.html'
+[[ $url ]] || { url=${1:?}; shift; }; url=${url%/}
+[[ $nm ]]  || nm=${url##*/}; nm=${nm%.html}
+[[ $rnm ]] || rng=("$@")
+
+main=$nm/index.html
+pages=$nm/index.urls
+
+## Links
+[[ -s $main ]]  || fetch-one "$url" "$main"
+[[ -s $pages ]] || parse-hrefs "$url" "$main" > "$pages"
+
+## Process
+getpage(){ local N=${u##*/} dst
+  dst=$(printf "$fmt" "$nm" "$N")
+  printf "$dst: "
+  [[ -s $dst ]] && echo "exists" && return
+  echo "download..."
+  fetch-one "$u" "$dst"
+}
+foreach(){ while read u; do eval "$@"
+  done < <(filter-range "$pages" '' -- "${rng[@]}")
+}
+foreach getpage '$u'
