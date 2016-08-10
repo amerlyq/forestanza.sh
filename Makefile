@@ -25,7 +25,7 @@ stage = $(word $(1),$(CHAIN))
 mkdir = $(call dirnm,$(call stage,$(1)))
 targs = $(TARGS:%=$(call stage,$(1)))
 
-all: $(call targs,2)
+all: $(call targs,3)
 
 $(O) $(foreach t,$(CHAIN),$(call dirnm,$t)): ; mkdir -p "$@"
 
@@ -43,5 +43,5 @@ $(call targs,1): $(call stage,1) : | $(O)/index.urls $(call mkdir,1)
 $(call targs,2): $(call stage,2) : $(call stage,1) $(AUX)/parse-content | $(call mkdir,2)
 	parse-content "$<" "$@"
 
-$(call targs,3): $(call stage,3) : $(call stage,2) $(AUX)/filter-sentences | $(call mkdir,3)
-	filter-sentences 42 "$<" "$@"
+$(call targs,3): $(call stage,3) : $(call stage,2) $(AUX)/text-split | $(call mkdir,3)
+	text-split 42 "$<" "$@"

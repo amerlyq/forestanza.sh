@@ -1,0 +1,66 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+use utf8;
+use autodie;
+use IPC::Open2;
+use File::Basename;
+
+my ($width, $nmin, $nmou) = @ARGV;
+local $ENV{PATH} = "${\dirname($0)}:$ENV{PATH}";
+
+my($fin, $fou);
+open ($fin, "<", $nmin);
+open ($fou, ">", $nmou);
+binmode ($fin, ':utf8');
+binmode ($fou, ':utf8');
+binmode (STDOUT, ':utf8');
+
+my($cmdin, $cmdou, $cmdpid);
+$cmdpid = open2($cmdin, $cmdou, "text-reflow $width");
+# ALT:(isolated) my @pts = split /\s/, qx(text-reflow $width $args);
+
+
+sub reflow {
+    my ($str, @idxs) = @_;
+    pop @idxs;
+    # simple strategy to wrap at each splitting point
+    foreach my $pos (reverse @idxs) { substr($str, $pos, 0) = "\n  "; }
+    return $str;
+}
+
+sub reflow_indexes {
+    my ($len, @ret) = length $_[0];
+    # OR '[」』、。！？]'
+    while ($_[0] =~ /([[:punct:]]+)/g) {
+        my ($s, $pos) = ($1, $-[0]);
+        # ignore ^ and $ sentence bounds
+        next if $pos == 0 or $+[0] == $len;
+        # shift split point before opening brace
+        $pos += ($s =~ /[「『]/ ? $-[0] : length $s);
+        push @ret, $pos;
+    }
+    push @ret, $len;
+    return @ret;
+}
+
+# NOTE instead of linewise+chomp I can use reflow on whole text
+while (<$fin>) {
+    chomp;
+    s/^\s+|\s+$//g;
+    next if /^$/;
+    my @idxs = reflow_indexes($_);
+    # printf $fou "\n%s\n", join(",", @idxs);  # TEMP
+
+    printf $cmdou "%s\n", join(" ", @idxs);
+    my $line = <$cmdin>;
+    my @pts = split /\s/, $line;
+
+    printf $fou "%s\n", reflow($_, @pts);
+}
+
+close $fou;
+close $fin;
+close $cmdin;
+close $cmdou;
+waitpid($cmdpid, 0);
