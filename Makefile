@@ -25,7 +25,7 @@ stage = $(word $(1),$(CHAIN))
 mkdir = $(call dirnm,$(call stage,$(1)))
 targs = $(TARGS:%=$(call stage,$(1)))
 
-all: $(O)/index.urls
+all: $(call targs,1)
 
 $(O) $(foreach t,$(CHAIN),$(call dirnm,$t)): ; mkdir -p "$@"
 
@@ -37,7 +37,7 @@ $(O)/index.urls: $(O)/index.html
 
 page = $(shell grep "/$$((10\#$*))$$" "$(word 1,$|)")
 
-$(call targs,1): | $(O)/index.urls $(call mkdir,1)
+$(call targs,1): $(call stage,1) : | $(O)/index.urls $(call mkdir,1)
 	fetch-one "$(page)" "$@"
 
 $(call targs,2): $(call stage,2) : $(call stage,1) $(AUX)/parse-content | $(call mkdir,2)
