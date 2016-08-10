@@ -1,0 +1,11 @@
+#!/bin/bash -e
+
+html=${1:?}
+dst=${2:?}
+
+mkdir -p "${dst%/*}"
+exec sed -n '/id="novel_honbun"/,/<\/div>/s/<[^>]*>//gp' "$html" > "$dst"
+
+# ALT:
+# awk '/^<\/div>/{p=0} {if(p){print}} /"novel_honbun"/{p=1}' \
+# elinks -dump-width 65536 -dump \

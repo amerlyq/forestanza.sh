@@ -25,7 +25,7 @@ stage = $(word $(1),$(CHAIN))
 mkdir = $(call dirnm,$(call stage,$(1)))
 targs = $(TARGS:%=$(call stage,$(1)))
 
-all: $(call targs,1)
+all: $(call targs,2)
 
 $(O) $(foreach t,$(CHAIN),$(call dirnm,$t)): ; mkdir -p "$@"
 
