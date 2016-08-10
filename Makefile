@@ -25,7 +25,7 @@ stage = $(word $(1),$(CHAIN))
 mkdir = $(call dirnm,$(call stage,$(1)))
 targs = $(TARGS:%=$(call stage,$(1)))
 
-all: $(O)/index.html
+all: $(O)/index.urls
 
 $(O) $(foreach t,$(CHAIN),$(call dirnm,$t)): ; mkdir -p "$@"
 

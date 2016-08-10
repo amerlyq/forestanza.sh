@@ -1,0 +1,14 @@
+#!/bin/bash -e
+
+url=${1:?}
+shift
+
+url=${url%/}
+section=${url##*/}
+
+[[ $section =~ [\"/] ]] \
+  && { echo "Wrong url section '$section'" >/dev/tty; exit 1; }
+
+patt='.* href="\\/'"$section"'\\/([0-9]+)\\/"'
+
+exec gawk -vu="$url" -vp="$patt" 'match($0,p,a){print u"/"a[1]}' "$@"
