@@ -1,0 +1,23 @@
+#!/bin/bash -e
+### Ranges: 7,9,15-28 -3 33..39,48-
+
+min=${1:?}
+max=${2:?}
+fmt=${3}
+[[ ${4:?} == -- ]] && shift 4 || exit
+rng=" ${*:--} "
+
+[[ $rng =~ [^\ ,.0-9-] ]] \
+  && { echo "Wrong chars in range [$rng]" >/dev/tty; exit 1; }
+
+eval set -- $(sed -r "
+  s/,/ /g; s/ -/ $min-/g; s/- /-$max /g; s/-/../g
+  s/([0-9]+)\.\.([0-9]+)/{\1..\2}/g
+  " <<< "$rng")
+
+rng=$(IFS=$'\n'; sort -ug <<< "$*" | gawk -vf="$fmt" '{printf"%"f"d\n",$0}')
+
+[[ ${rng//$'\n'/} =~ [^\ 0-9] ]] \
+  && { echo "Wrong chars in list [${rng//$'\n'/}]" >/dev/tty; exit 1; }
+
+echo "$rng"

@@ -1,0 +1,3 @@
+#!/bin/bash -e
+
+exec gawk -F/ 'NR==1{printf$NF} END{print" "$NF}' "$@"
