@@ -29,6 +29,13 @@ sub reflow {
     return $str;
 }
 
+# SEE:(brackets) http://xahlee.info/comp/unicode_matching_brackets.html
+my $br_ub = qr( “‘‹«≪（［｛｟⦅〚⦃「〈《【〔⦗『〖〘｢⟦⟨⟪⟮⟬⌈⌊⦇⦉❛❝❨❪❴❬❮❰❲〈⦑⧼﹙﹛﹝ );
+my $br_ue = qr( ”’›»≫）］｝｠⦆〛⦄」〉》】〕⦘』〗〙｣⟧⟩⟫⟯⟭⌉⌋⦈⦊❜❞❩❫❵❭❯❱❳〉⦒⧽﹚﹜﹞ );
+my $br_eb = qr( \(\[\{< );
+my $br_ee = qr( \)\]\}> );
+my $dl_um = qr( ―〜￤ );
+
 sub reflow_indexes {
     my ($len, @ret) = length $_[0];
     # OR '[」』、。！？]'
@@ -36,8 +43,10 @@ sub reflow_indexes {
         my ($s, $pos) = ($1, $-[0]);
         # ignore ^ and $ sentence bounds
         next if $pos == 0 or $+[0] == $len;
-        # shift split point before opening brace
-        $pos += ($s =~ /[「『]/ ? $-[0] : length $s);
+        # treat some punctuation as nonbreakable
+        next if $s =~ /[$dl_um]/;
+        # shift split point to the opening brace
+        $pos += ($s =~ /[$br_eb$br_ub]/ ? $-[0] : length $s);
         push @ret, $pos;
     }
     push @ret, $len;
