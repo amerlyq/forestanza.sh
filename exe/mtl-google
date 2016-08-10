@@ -1,0 +1,8 @@
+#!/bin/bash -e
+
+# ALT:(translate-shell)
+[[ -f $dfl ]] || trans -verbose -no-theme -no-ansi \
+        -show-languages=n -show-prompt-message=n -indent 8 \
+        -sl ja -tl en -i $sfl -o $dfl
+
+# curl -A "Mozilla/5.0"  'http://translate.google.com/translate_a/t?client=t&text=hello&hl=en&sl=en&tl=zh-CN&ie=UTF-8&oe=UTF-8&multires=1&prev=btn&ssel=0&tsel=0&sc=1' | sed 's/\[\[\["\([^"]*\).*/\1/'
