@@ -1,8 +1,20 @@
 #!/bin/bash -e
+PATH=$(readlink -e "${0%/*}"):$PATH
+
+text=${*:?}
+
+agent="Mozilla/5.0 (X11; Linux x86_64)"
+
+url="http://translate.googleapis.com/translate_a/single?"
+url+="client=gtx&ie=UTF-8&oe=UTF-8&dt=t&dt=rm&dt=at"
+url+="&sl=ja&tl=en&hl=en"
+url+="&tk=$(mtl-google-tk "$text")"
+# CHECK: if curl escapes url before sending
+url+="&q=$text"
+
+exec curl -A "$agent" "$url" | perl -lpe 's/(,|\[)(?=,|\])/$1null/g'
 
 # ALT:(translate-shell)
-[[ -f $dfl ]] || trans -verbose -no-theme -no-ansi \
-        -show-languages=n -show-prompt-message=n -indent 8 \
-        -sl ja -tl en -i $sfl -o $dfl
-
-# curl -A "Mozilla/5.0"  'http://translate.google.com/translate_a/t?client=t&text=hello&hl=en&sl=en&tl=zh-CN&ie=UTF-8&oe=UTF-8&multires=1&prev=btn&ssel=0&tsel=0&sc=1' | sed 's/\[\[\["\([^"]*\).*/\1/'
+# [[ -f $dfl ]] || trans -verbose -no-theme -no-ansi \
+#    -show-languages=n -show-prompt-message=n -indent 8 \
+#    -sl ja -tl en -i $sfl -o $dfl

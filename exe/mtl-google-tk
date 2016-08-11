@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+
+sub genXr($$)
+{
+    our ($r, $b) = @_;
+    sub idx { ord(substr($b, $_[0], 1)); }
+    $r &= 0xffffffff;
+    my $len = length($b) - 2;
+    for (my ($c,$d)=(0,0); $c < $len; $c += 3) {
+        $d = idx($c+2);
+        $d = (ord('a') <= $d)        ? ($d - 87)  : ($d - 48);
+        $d = (ord('+') == idx($c+1)) ? ($r >> $d) : ($r << $d);
+        $r = (ord('+') == idx($c))   ? ($r + $d)  : ($r ^ $d);
+    }
+    $r &= 0xffffffff;
+    return $r;
+}
+
+sub genTk($)
+{
+    my $s = $_[0];
+    utf8::decode($s);
+
+	my $tkk = int(time/3600);
+    my $a = $tkk;
+    for my $i (0 .. (length($s) - 1)) {
+        $a = genXr($a + ord(substr($s, $i, 1)), "+-a^+6");
+    }
+    $a = genXr($a, "+-3^+b+-f") % 1000000;
+    return sprintf("%i.%i", $a, ($a ^ $tkk));
+}
+
+print genTk($ARGV[0]);
