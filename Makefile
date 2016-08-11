@@ -1,6 +1,7 @@
 default: all
 
-AUX := $(shell pwd)/exe
+MWD := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+AUX := $(MWD)/exe
 export PATH := $(AUX):$(PATH)
 
 URL ?= http://ncode.syosetu.com/n2267be
