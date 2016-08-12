@@ -19,6 +19,7 @@ define CHAIN :=
 $(O)/01-html/%.html
 $(O)/02-content/%.txt
 $(O)/03-sentences/%.txt
+$(O)/04-mtl-google/%.json
 endef
 
 dirnm = $(patsubst %/,%,$(dir $(1)))
@@ -26,7 +27,7 @@ stage = $(word $(1),$(CHAIN))
 mkdir = $(call dirnm,$(call stage,$(1)))
 targs = $(TARGS:%=$(call stage,$(1)))
 
-all: $(call targs,3)
+all: $(call targs,4)
 
 $(O) $(foreach t,$(CHAIN),$(call dirnm,$t)): ; mkdir -p "$@"
 
@@ -46,3 +47,6 @@ $(call targs,2): $(call stage,2) : $(call stage,1) $(AUX)/parse-content | $(call
 
 $(call targs,3): $(call stage,3) : $(call stage,2) $(AUX)/text-split | $(call mkdir,3)
 	text-split 42 "$<" "$@"
+
+$(call targs,4): $(call stage,4) : $(call stage,3) $(AUX)/mtl-google-all | $(call mkdir,4)
+	mtl-google-all "$<" "$@"

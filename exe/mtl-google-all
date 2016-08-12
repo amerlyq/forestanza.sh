@@ -1,0 +1,35 @@
+#!/bin/bash -e
+PATH=$(readlink -e "${0%/*}"):$PATH
+
+src=${1:?}
+dst=${2:?}
+
+# USE: mv file -> *.tmp if there are diff : until all lines tl'ed
+#   and mv back (or touch origin) when changes synced
+
+# diff + ex
+# http://www.linuxdevcenter.com/pub/a/linux/lpt/28_09.html
+# http://usevim.com/2012/09/28/vim101-history/
+# { diff -e ...; echo %p; } | ex - "$dst"
+# <(sed -r 's/^\s+|\s+$//g' "$src")
+
+RAW=( parallel -a "$dst" 'echo {} | jshon -e0 -e0 -e1 -u')
+{ diff -detw <("${RAW[@]}" 2>/dev/null) "$src" && exit || (($?==1))
+} | diff-ex-line | while read line
+do { [[ $line =~ ^[0-9]+[ad]|\.$ ]] \
+&& echo "$line" || mtl-google "$line"; } #| ex - "$dst"
+done
+
+# ALT: sed '1,3c\固い地'
+# ALT: use sqlite here, give up on plain text
+
+# sed -n '3{p;q}' 001.json |
+# TL:  jshon -e0 -e0 -e0 -u
+# RAW: jshon -e0 -e0 -e1 -u
+# PH:  jshon -e0 -e1 -e3 -u
+# WRD: jshon -e5 -a -e0 -u -p -e2 -l -a -e0 -u | awk '{printf"%s",$0;getline;n=$0;while(n-->0){getline;printf"|%s",$0};print""}'
+# ALT:(with words weight) jshon -e5 -a -e0 -u -p -e2 -l -a -e0 -u -p -e1 -u
+
+
+# > "$dst"
+# xargs -t -L1 -ra "$src" mtl-google >> "$dst"
