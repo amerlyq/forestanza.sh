@@ -1,5 +1,6 @@
 #!/bin/bash -e
 PATH=$(readlink -e "${0%/*}"):$PATH
+set -o pipefail
 
 src=${1:?}
 dst=${2:?}
