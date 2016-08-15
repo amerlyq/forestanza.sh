@@ -1,0 +1,29 @@
+#!/bin/bash -e
+PATH=$(readlink -e "${0%/*}"):$PATH
+set -o pipefail
+
+cmd=${1:?}
+src=${2:?}
+get=${3:?}
+dst=${4:?}
+
+## diff + ex
+#   http://www.linuxdevcenter.com/pub/a/linux/lpt/28_09.html
+#   http://usevim.com/2012/09/28/vim101-history/
+
+{ diff -detw \
+  <(parallel -k --pipepart -a "$dst" "$get" 2>/dev/null) \
+ "$src" && exit || (($?==1))
+} | diff-ex-line | while read ex t
+do {
+  echo "$ex"
+  ${t+$cmd "$t"}
+  ${t+echo .}
+  printf "%s " "${ex%[ad]}" >/dev/tty
+} #| ex - "$dst"
+done
+
+## Apply changes
+#   { diff -ew ...; echo %p; } | ex - "$dst"
+#   ALT:(-w) <(sed -r 's/^\s+|\s+$//g' "$src")
+#   ALT:(ex) sed '1,3c\固い地'

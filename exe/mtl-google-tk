@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+# Last update: 2016/06/26
+# https://translate.google.com/translate/releases/twsfe_w_20160620_RC00/r/js/desktop_module_main.js
+
 use warnings;
 use strict;
 
