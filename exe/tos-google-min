@@ -1,0 +1,27 @@
+#!/bin/bash -e
+# Terms of Service (Times on Sleep)
+# Prevent '302 Moved'. Use r.b <(./mtl-google hello)
+
+export LOG='../build/mtl-google.log'
+
+c=${1:?}    # chars
+t=${2:?}    # seconds
+n=$(wc -m)  # text len
+((c>1)) || exit 0
+log=${LOG:?}
+
+# ALT: get N from 1st line and traverse until N-$3>$c and print time on $0
+#   -- sleep for current $t-(time-$0)
+N=$(tac "$log" | awk -vt=$(date +%s.%N) -vs=$t \
+  'm=t-$1<s{n+=$2}!m{print n}')
+
+# DEV: TL only if: 10k - $total > $N
+((N+n<c))||sleep $(( ((N+n)-c)/t ))
+
+exec gawk -vt=$(date +%s.%N) -vn=$N \
+  'END{printf"%.3f",t+0,$3+n}' \
+  "$log" >> "$log"
+
+# ENH when script executes -- accumulate time/count separately
+#   => no need to traverse file at that session then
+#   BUT each second many entries expired!

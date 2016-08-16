@@ -15,8 +15,11 @@ url+="client=gtx&ie=UTF-8&oe=UTF-8&dt=t&dt=rm&dt=at"
 url+="&sl=ja&tl=en&hl=en"
 url+="&tk=$(mtl-google-tk "$text")"
 
+# Limit 10k/100s, 1M/1day:
+# TODO: On each TL -- print remaining chars for day
+# tos-google-min 100 1 <<< "$text"
+
 # TODO: find upper limit on CJK text chunk in url
-sleep 0.2  # Prevent '302 Moved'. Use r.b <(./mtl-google hello)
 exec curl -s -A "$agent" "$url" --data-urlencode "q=$text" \
 | perl -lpe 's/(,|\[)(?=,|\])/$1null/g'
 
@@ -24,22 +27,3 @@ exec curl -s -A "$agent" "$url" --data-urlencode "q=$text" \
 # [[ -f $dfl ]] || trans -verbose -no-theme -no-ansi \
 #    -show-languages=n -show-prompt-message=n -indent 8 \
 #    -sl ja -tl en -i $sfl -o $dfl
-
-# Accumulating log
-#   ? is there sense to do accumulation?
-#   + even when truncating history -- you keep track of total traffic
-#   = if you need to gather statistics for whole day it may be slow -- to add all numbers
-#   % ALT place total in $3
-
-# log = build/mtl-google.log
-# { printf "%s " $(date +%s.%N); awk -vn=$N 'END{print($2+n)}' $log; } >> $log
-
-# TODO: On each TL -- print remaining chars
-
-# Limit 10k/100s, 1M/1day:
-# tac $log | awk -vb=$(date +%s.%N) -vs=10 'm=b-$1<s{n+=$2}!m{print n}'
-
-# ENH when script executes -- accumulate time/count separately
-#   no need to traverse file at that session then
-
-# DEV: TL only if: 10k - $total > $(wc -m <<< "$text")
