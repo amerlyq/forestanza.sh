@@ -2,25 +2,24 @@
 # Terms of Service (Times on Sleep)
 # Prevent '302 Moved'. Use r.b <(./mtl-google hello)
 
-export LOG='../build/mtl-google.log'
-
 c=${1:?}    # chars
-t=${2:?}    # seconds
+s=${2:?}    # seconds
 n=$(wc -m)  # text len
-((c>1)) || exit 0
-log=${LOG:?}
+((n>0)) || exit 0
+log=${3:-${LOG:-/tmp/${0##*/}.log}}
+
+if [[ -f $log ]]; then
+  t=$(date +%s.%N)
+  read pt pn < <(tail -1 "$log")
+  dt=$(bc <<< "if(0 < t = $pn * $s / $c + $pt - $t) t")
+  [[ -z $dt ]] || sleep $dt
+fi
 
 # ALT: get N from 1st line and traverse until N-$3>$c and print time on $0
-#   -- sleep for current $t-(time-$0)
-N=$(tac "$log" | awk -vt=$(date +%s.%N) -vs=$t \
-  'm=t-$1<s{n+=$2}!m{print n}')
+# N=$(tac "$log" | awk -vt=$(date +%s.%N) -vs=$t \
+#   'm=t-$1<s{n+=$2}!m{print n}')
 
-# DEV: TL only if: 10k - $total > $N
-((N+n<c))||sleep $(( ((N+n)-c)/t ))
-
-exec gawk -vt=$(date +%s.%N) -vn=$N \
-  'END{printf"%.3f",t+0,$3+n}' \
-  "$log" >> "$log"
+printf "%.3f %d\n" "$(date +%s.%N)" "$n" >> "$log"
 
 # ENH when script executes -- accumulate time/count separately
 #   => no need to traverse file at that session then

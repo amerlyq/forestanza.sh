@@ -1,4 +1,5 @@
-default: all
+.DEFAULT_GOAL := all
+.SUFFIXES:
 
 MWD := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 AUX := $(MWD)/exe
@@ -6,7 +7,7 @@ export PATH := $(AUX):$(PATH)
 
 URL ?= http://ncode.syosetu.com/n2267be
 O   ?= build
-RNG ?= 1-2
+RNG ?= 117
 
 MINMAX = 1 2
 ifneq ($(wildcard $(O)/index.urls),)
@@ -49,4 +50,4 @@ $(call targs,3): $(call stage,3) : $(call stage,2) $(AUX)/text-split | $(call mk
 	text-split 42 "$<" "$@"
 
 $(call targs,4): $(call stage,4) : $(call stage,3) $(AUX)/mtl-google-all | $(call mkdir,4)
-	mtl-google-all "$<" "$@"
+	LOG="$(O)/mtl-google.log"  mtl-google-all "$<" "$@"

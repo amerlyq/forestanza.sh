@@ -1,4 +1,4 @@
 #!/bin/bash -e
 RNG=$*
-[[ $RNG ]] || RNG=1-10
+[[ $RNG ]] || RNG=117
 exec make RNG="$RNG"
