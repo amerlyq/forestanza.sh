@@ -1,0 +1,4 @@
+#!/bin/bash -e
+set -o pipefail
+
+jshon -Q -e0 -a -e1 -u | head -n -1 | paste -sd ''

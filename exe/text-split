@@ -57,6 +57,7 @@ sub reflow_indexes {
 while (<$fin>) {
     chomp;
     s/^\s+|\s+$//g;
+    s/\s/ /g;  # web-services discard wide space
     next if /^$/;
     my @idxs = reflow_indexes($_);
     # printf $fou "\n%s\n", join(",", @idxs);  # TEMP

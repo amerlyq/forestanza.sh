@@ -1,2 +1,4 @@
 #!/bin/bash -e
-exec parallel --keep-order --pipepart "$@"
+exec parallel --keep-order --pipe -L1 -N1 "$@"
+
+# ALT: $ split --filter="cmd"

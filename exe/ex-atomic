@@ -1,5 +1,6 @@
 #!/bin/gawk -f
 
+  /d$/ { print; next }
   /c$/ { gsub(/c$/,"d"); print; $0=$0-1"a" }
   /a$/ { delete a; i=j=$0+0; next }
   /^\.$/ { for(k=i;k<j;k++) print k"a "a[k]; next }
