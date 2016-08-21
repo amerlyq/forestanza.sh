@@ -1,0 +1,25 @@
+#!/bin/bash -e
+trap 'exit 1' INT
+set -o pipefail
+
+cmd=${1:?}
+dst=${2:?}
+
+while read ex t; do
+  printf "%s " "${ex%[ad]}" >/dev/tty
+  if [[ $t ]]
+  then printf "%s\n%s\n.\nwq\n" "$ex" "$($cmd "$t")"
+  else printf "%s\nwq\n" "$ex"
+  fi | ex - "$dst"
+done
+
+echo >/dev/tty
+
+## diff + ex
+#   http://www.linuxdevcenter.com/pub/a/linux/lpt/28_09.html
+#   http://usevim.com/2012/09/28/vim101-history/
+
+## Apply changes
+#   { diff -ew ...; echo %p; } | ex - "$dst"
+#   ALT:(-w) <(sed -r 's/^\s+|\s+$//g' "$src")
+#   ALT:(ex) sed '1,3c\固い地'

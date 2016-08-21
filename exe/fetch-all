@@ -1,7 +1,7 @@
 #!/bin/bash -e
 set -o pipefail
 trap 'exit' INT
-PATH=$(readlink -e "${0%/*}"):$PATH
+PATH=$(realpath -e "${0%/*}"):$PATH
 
 while getopts 'c:f:n:u:' o; do case $o
 in c) cd "$OPTARG"

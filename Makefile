@@ -49,5 +49,6 @@ $(call targs,2): $(call stage,2) : $(call stage,1) $(AUX)/parse-content | $(call
 $(call targs,3): $(call stage,3) : $(call stage,2) $(AUX)/text-split | $(call mkdir,3)
 	text-split 42 "$<" "$@"
 
+$(call targs,4): export LOG := $(O)/mtl-google.log
 $(call targs,4): $(call stage,4) : $(call stage,3) $(AUX)/mtl-google-all | $(call mkdir,4)
-	LOG="$(O)/mtl-google.log"  mtl-google-all "$<" "$@"
+	mtl-google-all "$<" "$@"

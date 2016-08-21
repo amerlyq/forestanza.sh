@@ -1,0 +1,24 @@
+#!/bin/bash -e
+PATH=$(realpath -e "${0%/*}"):$PATH
+set -o pipefail
+
+cmd=${1:?}
+src=${2:?}
+fun=${3:?}
+dst=${4:?}
+
+dfmap(){ ex-diff <(ex-map -a "$dst" "$fun" ) "$src" "$@"; }
+# r.vim -d <(text-map "$dst" "$fun") "$src"
+
+# BUG: on jshon err -> next output line is consumed!
+#   => MAYBE problem with --pipepart
+ex-map -a "$dst" "$fun"
+exit 1
+
+{ dfmap && exit || (($?==1)) || exit
+} | ex-atomic | ex-apply "$cmd" "$dst"
+
+dfmap -q >/dev/null || {
+  echo "Err: '$src' is not completely TLed"
+  exit 1
+}

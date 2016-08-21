@@ -1,5 +1,5 @@
 #!/bin/bash -e
-PATH=$(readlink -e "${0%/*}"):$PATH
+PATH=$(realpath -e "${0%/*}"):$PATH
 set -o pipefail
 
 src=${1:?}
@@ -9,7 +9,8 @@ tmp=${dst}.part
 [[ -s $dst ]] && mv -fT "$dst" "$tmp"
 
 if [[ -s $tmp ]]; then
-  diff-ex-map 'mtl-google' "$src" 'jshon -e0 -e0 -e1 -u' "$tmp"
+  ex-sync 'mtl-google' "$src" \
+    'jshon -Q -e0 -e0 -e1 -u || echo' "$tmp"
 else
   while read line; do
     mtl-google >> "$tmp" <<< "$line"
