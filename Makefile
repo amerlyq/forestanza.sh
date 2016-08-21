@@ -21,6 +21,7 @@ $(O)/01-html/%.html
 $(O)/02-content/%.txt
 $(O)/03-sentences/%.txt
 $(O)/04-mtl-google/%.json
+$(O)/05-fmt-fza/%.fza
 endef
 
 dirnm = $(patsubst %/,%,$(dir $(1)))
@@ -28,7 +29,7 @@ stage = $(word $(1),$(CHAIN))
 mkdir = $(call dirnm,$(call stage,$(1)))
 targs = $(TARGS:%=$(call stage,$(1)))
 
-all: $(call targs,4)
+all: $(call targs,5)
 
 $(O) $(foreach t,$(CHAIN),$(call dirnm,$t)): ; mkdir -p "$@"
 
@@ -52,4 +53,7 @@ $(call targs,3): $(call stage,3) : $(call stage,2) $(AUX)/text-split | $(call mk
 # NOTE: this must depend on all scripts in mtl/google/*
 $(call targs,4): export LOG := $(O)/mtl-google.log
 $(call targs,4): $(call stage,4) : $(call stage,3) $(AUX)/mtl-one | $(call mkdir,4)
-	time mtl-one "$(AUX)/mtl/google" "$<" "$@"
+	map-guard mtl-one "$(AUX)/mtl/google" "$<" "$@"
+
+$(call targs,5): $(call stage,5) : $(call stage,4) $(AUX)/mtl-one | $(call mkdir,5)
+	map-guard fmt-fza "$(AUX)/mtl/google" "$<" "$@"

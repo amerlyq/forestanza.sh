@@ -31,7 +31,7 @@ getpage(){ local N=${u##*/} dst
   echo "download..."
   fetch-one "$u" "$dst"
 }
-foreach(){ while read u; do eval "$@"
+foreach(){ while IFS= read -r u; do eval "$@"
   done < <(filter-range "$pages" '' -- "${rng[@]}")
 }
 foreach getpage '$u'

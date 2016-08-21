@@ -10,7 +10,7 @@ log=${3:-${LOG:-/tmp/${0##*/}.log}}
 
 if [[ -f $log ]]; then
   t=$(date +%s.%N)
-  read pt pn < <(tail -1 "$log")
+  read -r pt pn < <(tail -1 "$log")
   dt=$(bc <<< "if(0 < t = $pn * $s / $c + $pt - $t) t")
   # echo $dt >/dev/tty
   [[ -z $dt ]] || sleep $dt

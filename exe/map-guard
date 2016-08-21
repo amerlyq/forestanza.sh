@@ -1,0 +1,18 @@
+#!/bin/bash -e
+
+# Index of guarded argument
+[[ $1 =~ [0-9]+ ]] && { i=$1; shift; } || i=$#
+
+dst=${@:$i:1}
+tmp=${dst:?}.part
+
+[[ -s $dst ]] && mv -fT "$dst" "$tmp"
+
+set -- "${@:1:$i-1}" "$tmp" "${@:$i+1:$#}"
+
+ts=$SECONDS
+"$@"
+((ts=SECONDS-ts)) && echo "#Done in ${ts}s"
+
+mv -fT "$tmp" "$dst"
+touch "$dst"  # Upd time even if no diff
