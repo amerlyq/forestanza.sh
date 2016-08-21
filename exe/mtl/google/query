@@ -1,35 +1,31 @@
 #!/bin/bash -e
-PATH=$(realpath -e "${0%/*}"):$PATH
 set -o pipefail
 
 text=${*:-$([[ -t 0 ]]||ifne cat)}
 text=${text:?}
 
-# TODO: choose random agent
+SWD=$(realpath -e "${0%/*}")
+PATH=$SWD:${SWD%/*/*}:$PATH
+
 # agent="Mozilla/5.0 (X11; Linux x86_64)"
 agent='Mozilla/5.0 (X11; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
 # agent='Mozilla/5.0 (Windows NT 6.1; rv:38.0) Gecko/20100101 Firefox/38.0'
 
-# TODO: shuffle path components?
 url="http://translate.googleapis.com/translate_a/single?"
 url+="client=gtx"
 url+="&sl=ja&tl=en&hl=en"
 # url+="&dt=t&dt=at&dt=rm"  # python
 url+="&dt=t&dt=at&dt=rm&dt=bd&source=input"  # source=ls
-url+="&tk=$(mtl-google-tk "$text")"  # tk has the same left/right ?
+url+="&tk=$(query-tk "$text")"  # tk has the same left/right ?
 
 # Limit 10k/100s, 1M/1day:
 # TODO: On each TL -- print remaining chars for day
 tos-limit-speed 100 1 <<< "$text"
 
-# CHECK: maybe problem with '--data-urlencode' made as POST => TRY forcing GET
-# FIND: Host for translate.google.com
-
 # NOTE: python-like
 # exec curl -v -s -H 'Accept:' -H 'Accept-Encoding: identity' \
 #   -A "$agent" -H 'Connection: close' \
 #   -G "$url" --data-urlencode "q=$text" \
-# | perl -lpe 's/(,|\[)(?=,|\])/$1null/g'
 
 # NOTE: gt-ext-like
 # BAD: no output with --http2

@@ -1,0 +1,5 @@
+#!/bin/bash -e
+
+awk -vth=0 '{s=$0"|";getline;n=$0+0;while(n-->0){
+getline;w=$0+0;getline;if(w>th){s=s$0;if(n>1)s=s", "}
+};if(s !~ /^\s*\|\s*$/)print s}'

@@ -1,10 +1,14 @@
 #!/bin/bash -e
-PATH=$(realpath -e "${0%/*}"):$PATH
 set -o pipefail
 
-src=${1:?}
-dst=${2:?}
+mtl=${1:?}
+src=${2:?}
+dst=${3:?}
 tmp=${dst}.part
+
+# SWD=$(realpath -e "${0%/*}")
+# PATH=$SWD/$mtl:$SWD:$PATH
+PATH=$(realpath -e "${0%/*}"):$PATH
 
 [[ -s $dst ]] && mv -fT "$dst" "$tmp"
 
@@ -13,11 +17,9 @@ tmp=${dst}.part
 # ALT: use sqlite here, give up on plain text
 
 if [[ -s $tmp ]]; then
-  ex-sync 'mtl-google' "$src" "mtl-google-orig" "$tmp"
+  ex-sync "$mtl/query" "$src" "$mtl/get-orig" "$tmp"
 else
-  while read line; do
-    mtl-google >> "$tmp" <<< "$line"
-  done < <(bar -- "$src")
+  map-stdin "$src" "'$mtl/query' >> '$tmp'"
 fi
 
 mv -fT "$tmp" "$dst"
@@ -30,10 +32,3 @@ touch "$dst"  # Upd time even if no diff
 #  - too hard to compare resulting json with src
 #  ! you are treated as robot after several dozens of requests
 #  - for limited GET request no sense to join multiple sentence
-
-# sed -n '3{p;q}' 001.json |
-# TL:  jshon -e0 -e0 -e0 -u
-# RAW: jshon -e0 -e0 -e1 -u
-# PH:  jshon -e0 -e1 -e3 -u
-# WRD: jshon -e5 -a -e0 -u -p -e2 -l -a -e0 -u | awk '{printf"%s",$0;getline;n=$0;while(n-->0){getline;printf"|%s",$0};print""}'
-# ALT:(with words weight) jshon -e5 -a -e0 -u -p -e2 -l -a -e0 -u -p -e1 -u

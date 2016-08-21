@@ -1,9 +1,11 @@
 #!/bin/bash -e
-trap 'exit 1' INT
 set -o pipefail
+trap 'exit 1' INT
 
 cmd=${1:?}
 dst=${2:?}
+
+PATH=$(realpath -e "${0%/*}"):$PATH
 
 while read ex t; do
   printf "%s " "${ex%[ad]}" >/dev/tty

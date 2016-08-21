@@ -1,5 +1,4 @@
 #!/bin/bash -e
-PATH=$(realpath -e "${0%/*}"):$PATH
 set -o pipefail
 
 cmd=${1:?}
@@ -7,20 +6,14 @@ src=${2:?}
 fun=${3:?}
 dst=${4:?}
 
-dfmap(){ diff -detw <(ex-map "$fun" < "$dst") <(sed '/^\s\+/s///' "$src") "$@"; }
+PATH=$(realpath -e "${0%/*}"):$PATH
 
 # BAD: ex-map linewise spawning is too slow: user >8s for 400L
 # ALT:(one-pass) awk 'BEGIN{print"["} NR>1{printf","} END{print"]"} 1' "$dst" | jshon -a -e0 -a -e1
 #   BUT: as -d-1 don't work, we can't discard 'null' and we completely crash on broken json...
 
-# ex-map "$fun" < "$dst" > /tmp/1
-# sed '/^\s\+/s///' "$src" >/tmp/2
-# exit 1
-
-{ dfmap && exit || (($?==1)) || exit
+{ diff -detw \
+  <(ex-map "$fun" < "$dst") \
+  <(sed '/^\s\+/s///' "$src") \
+  && exit || (($?==1)) || exit
 } | ex-atomic | ex-apply "$cmd" "$dst"
-
-# if ! dfmap -q >/dev/null; then
-#   echo "Err: '$src' is not completely TLed"
-#   exit 1
-# fi

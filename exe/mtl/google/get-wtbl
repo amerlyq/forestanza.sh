@@ -1,0 +1,6 @@
+#!/bin/bash -e
+set -o pipefail
+
+# ALT:(with words weight)
+jshon -e5 -a -e0 -u -p -e2 -l -a -e1 -u -p -e0 -u \
+| sed -r '/^[[:punct:][:blank:]]+|[[:punct:][:blank:]]+$/s///g'
