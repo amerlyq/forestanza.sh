@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+# CHECK: maybe map-guard isn't necessary,
+#   because makefile deletes uncompleted targets itself?
+
 # Index of guarded argument
 [[ $1 =~ [0-9]+ ]] && { i=$1; shift; } || i=$#
 

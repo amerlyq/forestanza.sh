@@ -22,6 +22,7 @@ $(O)/02-content/%.txt
 $(O)/03-sentences/%.txt
 $(O)/04-mtl-google/%.json
 $(O)/05-fmt-fza/%.fza
+$(O)/06-fmt-xhtml/%.xhtml
 endef
 
 dirnm = $(patsubst %/,%,$(dir $(1)))
@@ -29,7 +30,7 @@ stage = $(word $(1),$(CHAIN))
 mkdir = $(call dirnm,$(call stage,$(1)))
 targs = $(TARGS:%=$(call stage,$(1)))
 
-all: $(call targs,5)
+all: $(call targs,6)
 
 $(O) $(foreach t,$(CHAIN),$(call dirnm,$t)): ; mkdir -p "$@"
 
@@ -37,7 +38,7 @@ $(O)/index.html: | $(O)
 	fetch-one "$(URL)" "$@"
 
 $(O)/index.urls: $(O)/index.html
-	parse-hrefs "$(URL)" "$<" > "$@"
+	map-guard parse-hrefs "$(URL)" "$<" > "$@"
 
 page = $(shell grep "/$$((10\#$*))$$" "$(word 1,$|)")
 
@@ -45,15 +46,18 @@ $(call targs,1): $(call stage,1) : | $(O)/index.urls $(call mkdir,1)
 	fetch-one "$(page)" "$@"
 
 $(call targs,2): $(call stage,2) : $(call stage,1) $(AUX)/parse-content | $(call mkdir,2)
-	parse-content "$<" "$@"
+	map-guard parse-content "$<" "$@"
 
 $(call targs,3): $(call stage,3) : $(call stage,2) $(AUX)/text-split | $(call mkdir,3)
-	text-split 42 "$<" "$@"
+	map-guard text-split 42 "$<" "$@"
 
 # NOTE: this must depend on all scripts in mtl/google/*
 $(call targs,4): export LOG := $(O)/mtl-google.log
 $(call targs,4): $(call stage,4) : $(call stage,3) $(AUX)/mtl-one | $(call mkdir,4)
 	map-guard mtl-one "$(AUX)/mtl/google" "$<" "$@"
 
-$(call targs,5): $(call stage,5) : $(call stage,4) $(AUX)/mtl-one | $(call mkdir,5)
+$(call targs,5): $(call stage,5) : $(call stage,4) $(AUX)/fmt-fza | $(call mkdir,5)
 	map-guard fmt-fza "$(AUX)/mtl/google" "$<" "$@"
+
+$(call targs,6): $(call stage,6) : $(call stage,5) $(AUX)/fmt-xhtml | $(call mkdir,6)
+	map-guard fmt-xhtml "$<" "$@"
