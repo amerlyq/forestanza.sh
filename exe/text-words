@@ -1,0 +1,28 @@
+#!/usr/bin/perl
+use warnings;
+use strict;
+use utf8;
+use autodie;
+binmode (STDOUT, ':utf8');
+
+# orig="* 声を掛けたくても、なにを言っていいのか、そして言葉の作り方がわからない。"
+# phon=": Koe o kaketakute mo, nani o itte ī no ka, soshite kotoba no tsukurikata ga wakaranai."
+
+my $orig = "* カウンターの向こうでカドモンが慌てた素振りで両手を上げたり下げたりしている。";
+my $phon = ": Kauntā no mukō de kadomon ga awateta soburi de ryōte o agetarisagetari shite iru.";
+# $orig =~ s/[^ぁ-ゖ]+/.+/g;
+
+# Split by:
+# http://www.fileformat.info/info/unicode/char/200B/index.htm
+
+# [:punct:]
+# ! kata <> hira
+# = kana < kanji
+# ~ kanji > kana
+# syntax kana (no, wa, etc)
+# all kana
+# letters per kanji
+
+my @pts = split /\b/, $orig;
+
+print $pts[2];
