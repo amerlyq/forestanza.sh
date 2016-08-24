@@ -1,0 +1,24 @@
+#!/bin/bash -e
+set -o pipefail
+
+text=${*:-$([[ -t 0 ]]||ifne cat)}
+text=${text:?}
+sl=ja
+tl=en
+
+SWD=$(realpath -e "${0%/*}")
+PATH=$SWD:${SWD%/*/*}:$PATH
+
+agent='Mozilla/5.0 (X11; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
+
+url="http://translate.baidu.com/transcontent?"
+url+="source=txt&ie=utf-8"
+url+="&from=$sl&to=$tl"
+
+tos-limit-speed 100 1 <<< "$text"
+
+exec curl -s \
+  -H 'Accept-Encoding: gzip, deflate' \
+  -H 'Accept-Languages: en-US,en' \
+  -A "$agent" "$url" --data-urlencode "query=$text" \
+| { gzip -dc --force; echo; }

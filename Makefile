@@ -6,6 +6,7 @@ AUX := $(MWD)/exe
 RES := $(MWD)/res
 export PATH := $(AUX):$(PATH)
 
+# https://en.wikipedia.org/wiki/List_of_Re:Zero_-Starting_Life_in_Another_World-_episodes
 URL ?= http://ncode.syosetu.com/n2267be
 NAM ?= $(notdir $(URL))
 O   ?= build
@@ -32,7 +33,8 @@ stage = $(word $(1),$(CHAIN))
 mkdir = $(call dirnm,$(call stage,$(1)))
 targs = $(TARGS:%=$(call stage,$(1)))
 
-all: $(call targs,6)
+# all: $(call targs,6)
+all: $(TARGS:%=$(O)/04-mtl-baidu/%.json)
 
 $(O) $(foreach t,$(CHAIN),$(call dirnm,$t)): ; mkdir -p "$@"
 
@@ -57,6 +59,10 @@ $(call targs,3): $(call stage,3) : $(call stage,2) $(AUX)/text-split | $(call mk
 $(call targs,4): export LOG := $(O)/mtl-google.log
 $(call targs,4): $(call stage,4) : $(call stage,3) $(AUX)/mtl-one | $(call mkdir,4)
 	map-guard mtl-one "$(AUX)/mtl/google" "$<" "$@"
+
+$(O)/04-mtl-baidu/%.json: export LOG=$(O)/mtl-baidu.log
+$(O)/04-mtl-baidu/%.json :: $(O)/03-sentences/%.txt $(AUX)/mtl-one
+	map-guard mtl-one "$(AUX)/mtl/baidu" "$<" "$@"
 
 $(call targs,5): $(call stage,5) : $(call stage,4) $(AUX)/fmt-fza | $(call mkdir,5)
 	map-guard fmt-fza "$(AUX)/mtl/google" "$<" "$@"

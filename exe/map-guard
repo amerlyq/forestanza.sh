@@ -9,6 +9,7 @@
 dst=${@:$i:1}
 tmp=${dst:?}.part
 
+[[ -d ${dst%/*} ]] || mkdir -p "${dst%/*}"
 [[ -s $dst ]] && mv -fT "$dst" "$tmp"
 
 set -- "${@:1:$i-1}" "$tmp" "${@:$i+1:$#}"
