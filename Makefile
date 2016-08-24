@@ -3,9 +3,11 @@
 
 MWD := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 AUX := $(MWD)/exe
+RES := $(MWD)/res
 export PATH := $(AUX):$(PATH)
 
 URL ?= http://ncode.syosetu.com/n2267be
+NAM ?= $(notdir $(URL))
 O   ?= build
 RNG ?= 117
 
@@ -59,5 +61,16 @@ $(call targs,4): $(call stage,4) : $(call stage,3) $(AUX)/mtl-one | $(call mkdir
 $(call targs,5): $(call stage,5) : $(call stage,4) $(AUX)/fmt-fza | $(call mkdir,5)
 	map-guard fmt-fza "$(AUX)/mtl/google" "$<" "$@"
 
-$(call targs,6): $(call stage,6) : $(call stage,5) $(AUX)/fmt-xhtml | $(call mkdir,6)
-	map-guard fmt-xhtml "$<" "$@"
+
+# xhtml
+res := color-theme.css scroll_pos.js
+fza := $(dir $(call targs,6))/fza
+$(fza)/%: $(RES)/xhtml/%
+	@mkdir -p "$(call dirnm,$@)"
+	cp -fT "$<" "$@"
+
+.PHONY: xhtml/fza
+xhtml/fza :: $(AUX)/fmt-xhtml $(res:%=$(fza)/%) ;
+
+$(call targs,6): $(call stage,6) : $(call stage,5) xhtml/fza | $(call mkdir,6)
+	map-guard fmt-xhtml "$(NAM)" "$<" "$@"

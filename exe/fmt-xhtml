@@ -1,3 +1,106 @@
-#!/bin/bash -e
+#!/usr/bin/python3 -u
 
-echo hi
+import sys
+import re
+
+tmpl_beg = """\
+<?xml version="1.0" encoding="utf-8"?>
+<!-- vim: set ts=2 sw=2 sts=2 ft=xhtml: -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>{title}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style type="text/css" media="screen">
+    @import url('fza/color-theme.css');
+    @import url('fza/color-syntax.css');
+  </style>
+  <script src="fza/scroll_pos.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<h2 id="title">{title}</h2>
+"""
+
+tmpl_end = """
+</body></html>
+"""
+
+tmpl_section = """
+<h3 id="s{idx:04d}">{idx:04d}</h3>
+<p class="origin">\n  {orig}\n</p>
+<p class="phonet">\n  {phon}\n</p>
+<p class="transl">\n  {tran}\n</p>
+<table class="table"><tbody>\n{wtbl}</tbody></table><br/>
+"""
+
+tmpl_wtable = """<tr>
+  <td class="origin">{!s}</td>
+  <td>{!s}</td>
+</tr>\n"""
+
+
+def escape(e):
+    if isinstance(e, str):
+        return e.replace('<', '&lt;').replace('>', '&gt;').replace('&', '&amp;')
+    elif isinstance(e, list):
+        return [escape(s) for s in e]
+    elif isinstance(e, dict):
+        return {k: escape(v) for k, v in e}
+
+
+def section(sec):
+    # self.synxhtml.pygment_origin(escape(orig.strip()))
+    fmt = {}
+    fmt['idx'] = sec['idx']
+    fmt['orig'] = '\n'.join(escape(sec['orig']))
+    fmt['phon'] = '\n'.join(escape(sec['phon']))
+    fmt['tran'] = '\n'.join(escape(sec['tran']))
+    fmt['wtbl'] = ''.join([tmpl_wtable.format(*escape(row))
+                           for row in sec['wtbl']])
+    return tmpl_section.format(**fmt)
+
+
+def ins(sec, key, prf, line, f=lambda x: x):
+    if line[0:1] not in prf:
+        return
+    sec[key].append(f(line))
+
+
+def parse(f):
+    while True:
+        sec = {'orig': [], 'phon': [], 'tran': [], 'wtbl': []}
+        for line in f:
+            line = line.rstrip()
+            if not line:
+                if not sec['orig']:
+                    continue
+                else:
+                    break
+            elif line.isdigit():
+                sec['idx'] = int(line)
+            elif line[0:1] in '* ':
+                sec['orig'].append(line[2:])
+            elif line[0:1] in ': ':
+                sec['phon'].append(line[2:])
+            elif line[0:1] in '= ':
+                sec['tran'].append(line[2:])
+            elif line[0:1] in '| ':
+                sec['wtbl'].append(re.split('\s*\|\s*', line[2:], 1))
+        if sec['orig']:
+            yield sec
+        else:
+            break
+
+
+if __name__ == '__main__':
+    title = sys.argv[1]
+    src = sys.argv[2]
+    dst = sys.argv[3]
+
+    try:
+        with open(src, 'r') as s, open(dst, 'w') as f:
+            f.write(tmpl_beg.format(title=escape(title)))
+            [f.write(section(sec)) for sec in parse(s)]
+            f.write(tmpl_end)
+
+    except KeyboardInterrupt:
+        sys.stdout.flush()
