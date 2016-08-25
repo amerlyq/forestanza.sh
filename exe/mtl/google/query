@@ -13,7 +13,7 @@ agent='Mozilla/5.0 (X11; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
 
 url="http://translate.googleapis.com/translate_a/single?"
 url+="client=gtx"
-url+="&sl=ja&tl=en&hl=en"
+url+="&sl=ja&tl=en&hl=en"  # &dj=1
 # url+="&dt=t&dt=at&dt=rm"  # python
 url+="&dt=t&dt=at&dt=rm&dt=bd&source=input"  # source=ls
 url+="&tk=$(query-tk "$text")"  # tk has the same left/right ?

@@ -23,6 +23,21 @@ my $phon = ": Kauntā no mukō de kadomon ga awateta soburi de ryōte o agetaris
 # all kana
 # letters per kanji
 
+# Simplified alg:
+#   * line of characters
+#   * similar line, but separated by spaces into words
+#   * several symbols in lines are the same
+#       - word bounds can be treated like symbols
+#   = Need to split/insert spaces into original line
+# Invariants
+#   * same sequence of the reference points
+#       - but it can be altered
+#   * min/max length of bidirectional mapping
+#       - need to know which symbols can combine (less length)
+#       - most long words from single kanji
+#           * check if the most long can be explicitly enumerated and then
+#             align to less long ones
+
 my @pts = split /\b/, $orig;
 
 print $pts[2];

@@ -27,6 +27,8 @@ do
   { printf "* "; get-orig <<< "$google" 3<&- 4<&-; }
   { printf ": "; get-phon <<< "$google" 3<&- 4<&-; }
   { printf "= "; get-tran <<< "$google" 3<&- 4<&-; }
+  # TODO: sort wtbl by order of origin (1st index of the longest span)
+  #   => attach indexes to get-wtbl, place into array in fmt-wtbl, print in END{}
   get-wtbl <<< "$google" 3<&- 4<&- | fmt-wtbl \
   | column -t -s '|' -o ' | ' | awk '$0="| "$0'
   echo

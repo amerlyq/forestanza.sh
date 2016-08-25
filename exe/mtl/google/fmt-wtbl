@@ -2,6 +2,7 @@
 BEGIN{ th=0 }
 
 { s=$0"|"
+    getline; idx=$0
     getline; n=$0+0
     for(i=0; i<n; ++i) {
         getline; w=$0+0

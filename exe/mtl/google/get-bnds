@@ -1,0 +1,4 @@
+#!/bin/bash -e
+set -o pipefail
+
+jshon -Q -e5 -a -e3 -a -e0 -u -p -e1 -u | sort -nu | xargs
