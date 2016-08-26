@@ -1,15 +1,52 @@
-#!/bin/gawk -f
-BEGIN{ th=0 }
+#!/usr/bin/perl -w
+use strict;
+use utf8;
+use autodie;
+binmode (STDIN, ':utf8');
+binmode (STDOUT, ':utf8');
+use Data::Dump qw(dump);
 
-{ s=$0"|"
-    getline; idx=$0
-    getline; n=$0+0
-    for(i=0; i<n; ++i) {
-        getline; w=$0+0
-        getline; if(w > th) {
-            s=s (i ? ", " : "") $0
-        }
+# REF http://www.rikai.com/library/kanjitables/kanji_codes.unicode.shtml
+
+my $th = 0;
+my %wtbl;
+
+while(<>) {
+    chomp;
+    my @o = split /\s+/;
+    my @d = <> =~ /\d+/g;
+    # Sort single phrase parts by origin indexes
+    # BUG 117:3:19-25 has coords as single word => len @o > len @p
+    # BUG reverse order of words in non-splitted phrases
+    my @p = sort { $a->[0] <=> $b->[0] }
+            map { [$d[2*$_], $d[2*$_+1], $o[$_]] }
+            0 .. scalar(@d)/2-1;
+
+    # print dump(@p),"\n";
+
+    # Find index for main part of phrase
+    my ($key, $len) = (undef, 0);
+    my @pp = grep { ($_->[2]||'') =~ /[\u3400-\u9faf]/ } @p;
+    @pp = @p if not @pp;
+    foreach (@pp) {
+        my $l = $_->[1] - $_->[0];
+        print dump($_),"\n";
+        next if $l <= $len;
+        $len = $l;
+        $key = $_->[0];
+    }
+
+    my $n = <>; #chomp $n;
+    my $s;
+    for(my $i=0; $i < $n+0; ++$i) {
+        my $w = <>; $_ = <>; chomp;
+        $s .= ($i ? ", " : "") . $_ if($w+0 > $th);
     }
     # Remove lines without meaningful words
-    if(s !~ /^[[:punct:][:blank:]]+$/) { print s }
+    $wtbl{$key} = join(" ", map {$_} @o) . "|" . $s if $s !~ /^[[:punct:][:blank:]]+$/;
+}
+
+# Sort all phrases by origin indexes of main part
+foreach (sort {$a <=> $b} keys %wtbl) {
+    print $wtbl{$_},"\n";
 }
