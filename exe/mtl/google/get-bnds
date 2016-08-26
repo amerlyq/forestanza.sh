@@ -1,4 +1,6 @@
 #!/bin/bash -e
 set -o pipefail
 
+# WARN: bounds for phrases only
+#   => words in phrase aren't splitted
 jshon -Q -e5 -a -e3 -a -e0 -u -p -e1 -u | sort -nu | xargs

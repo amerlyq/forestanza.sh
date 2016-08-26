@@ -8,3 +8,5 @@ jshon -e5 -a -e0 -u -p -e3 -j -p -e2 -l -a -e1 -u -p -e0 -u \
   /\(aux:relc\)|\(null:pronoun\)/s//·/g
   /^[[:punct:][:blank:]]+|[[:punct:][:blank:]]+$/s///g
 '
+
+# NOTE:(·) removed to compare words in phrases and spans

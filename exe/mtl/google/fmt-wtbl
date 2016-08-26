@@ -11,39 +11,63 @@ use Data::Dump qw(dump);
 my $th = 0;
 my %wtbl;
 
+# Sort single phrase parts by origin indexes
+sub ipairs($$) { my @p;
+    my @words = split /\s+/, $_[0];
+    my @numbers = $_[1] =~ /\d+/g;
+
+    # FIXED BUG 117:3:19-25 has coords as single word => len @o > len @p
+    # FIXED BUG@1 reverse order of words in non-splitted phrases 117:4:6-7,38-41
+    # BUG sometimes order isn't inverted! 117:{7,12}:1 (aligned to en-US?)
+    #   => Therefore I can't use it directly to split phrases to words!
+    # HACK => count symbols w/o spaces in separate elements, then reverse each one
+    for(my $i=0, my $j=0; $i < scalar @numbers; $i+=2) {
+        my $pos = $numbers[$i];
+        my $len = $numbers[$i+1] - $pos;
+
+        my @wrds;
+        my $k = $len;
+        while($k > 0 and $j < scalar @words) {
+            my $w = $words[$j++];
+            push @wrds, $w;
+            $k -= length $w;
+        }
+
+        push @p, [$pos, $len, join("·", reverse @wrds)];
+    }
+    # ALT map { [$numbers[2*$_], $numbers[2*$_+1] - $numbers[2*$_]] } (0 .. scalar(@numbers)/2-1);
+    return sort { $a->[0] <=> $b->[0] } (@p)
+}
+
 while(<>) {
     chomp;
-    my @o = split /\s+/;
-    my @d = <> =~ /\d+/g;
-    # Sort single phrase parts by origin indexes
-    # BUG 117:3:19-25 has coords as single word => len @o > len @p
-    # BUG reverse order of words in non-splitted phrases
-    my @p = sort { $a->[0] <=> $b->[0] }
-            map { [$d[2*$_], $d[2*$_+1], $o[$_]] }
-            0 .. scalar(@d)/2-1;
-
+    my @p = ipairs($_, <>);
     # print dump(@p),"\n";
 
     # Find index for main part of phrase
-    my ($key, $len) = (undef, 0);
-    my @pp = grep { ($_->[2]||'') =~ /[\u3400-\u9faf]/ } @p;
+    # CHECK may provide wrong order for mixed non-splitted phrases
+    my ($key, $max) = (65536, 0);
+    my @pp = grep { $_->[2] =~ /[\u3400-\u9faf]/ } @p;
     @pp = @p if not @pp;
     foreach (@pp) {
-        my $l = $_->[1] - $_->[0];
-        print dump($_),"\n";
-        next if $l <= $len;
-        $len = $l;
+        next if $_->[1] <= $max;
         $key = $_->[0];
+        $max = $_->[1];
+        # print dump($len),"\n";
     }
 
+    my $s = "";
     my $n = <>; #chomp $n;
-    my $s;
     for(my $i=0; $i < $n+0; ++$i) {
         my $w = <>; $_ = <>; chomp;
         $s .= ($i ? ", " : "") . $_ if($w+0 > $th);
     }
-    # Remove lines without meaningful words
-    $wtbl{$key} = join(" ", map {$_} @o) . "|" . $s if $s !~ /^[[:punct:][:blank:]]+$/;
+    # Don't include lines without meaningful words
+    if (@p and $s =~ /\w/) {
+        my $o = join(" ", map { $_->[2] } @p);
+        # print dump($o),"\n";
+        $wtbl{$key} = $o . "|" . $s;
+    }
 }
 
 # Sort all phrases by origin indexes of main part
