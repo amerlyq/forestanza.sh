@@ -6,9 +6,11 @@ trap 'echo >/dev/tty' EXIT
 # TODO:SEE: 'column' sources to align wide-char columns
 
 dst=${1:?}
-gsrc=${2:?}
-ysrc=${3:?}
-bsrc=${4:?}
+[[ ${2:?} == -- ]]
+gsrc=${3:?}
+ysrc=${4:?}
+bsrc=${5:?}
+bysrc=${6:?}
 
 SWD=$(realpath -e "${0%/*}")
 PATH=$SWD:$PATH
@@ -26,6 +28,7 @@ while
   IFS= read -r gline <&3
   IFS= read -r yline <&4
   IFS= read -r bline <&5
+  IFS= read -r byline <&6
 do
   ((n+=1))
   printf "\r%3d%% : %s" "$((100*n/N))" "$n/$N" >/dev/tty
@@ -36,14 +39,16 @@ do
   { printf "= [G] "; "$gwd"/get-tran <<< "$gline"; }
   { printf "= [Y] "; "$mtl/yandex"/get-tran <<< "$yline"; }
   { printf "= [B] "; "$mtl/bing"/get-tran <<< "$bline"; }
+  { printf "= [By] "; "$mtl/babylon"/get-tran <<< "$byline"; }
 
   # TODO: sort wtbl by order of origin (1st index of the longest span)
   #   => attach indexes to get-wtbl, place into array in fmt-wtbl, print in END{}
-  "$gwd"/get-wtbl <<< "$gline" 3<&- 4<&- | "$gwd"/fmt-wtbl 3<&- 4<&- \
-  | column -t -s '|' -o ' | ' | awk '$0="| "$0'
+  "$gwd"/get-wtbl <<< "$gline" \
+  | "$gwd"/fmt-wtbl 3<&- 4<&- 5<&- 6<&- \
+  | column -t -s '|' -o ' | ' \
+  | awk '$0="| "$0'
   echo
-
-done 3<"$gsrc" 4<"$ysrc" 5<"$bsrc"
+done 3<"$gsrc" 4<"$ysrc" 5<"$bsrc" 6<"$bysrc"
 
 
 # BAD: read from pipe immediately closes it

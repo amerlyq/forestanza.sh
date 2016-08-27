@@ -1,0 +1,36 @@
+#!/bin/bash -e
+set -o pipefail
+
+SWD=$(realpath -e "${0%/*}")
+PATH=$SWD:${SWD%/*/*}:$PATH
+
+agent='Mozilla/5.0 (X11; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
+
+text=${*:-$([[ -t 0 ]]||ifne cat)}
+text=${text:?}
+sl=8  #ja
+tl=0  #en
+
+url="translation.babylon.com/translate/babylon.php?"
+url+="&v=1.0"
+url+="&langpair=${sl}%7C${tl}"
+url+="&callback=ret"
+# &callback=babylonTranslator.callback
+# &context=babylon.0.43._babylon_api_response
+
+tos-limit-speed 100 1 <<< "$text"
+
+exec curl -s \
+  -H 'Host: translation.babylon-software.com' \
+  -H 'Accept-Encoding: gzip, deflate' \
+  -H 'Accept-Languages: en-US,en' \
+  -A "$agent" -G "$url" \
+  --data-urlencode "q=$text" \
+| gzip -dc --force \
+| sed '1s/ret('"''"', //; $s/, 200, null, null);$//' \
+| jshon -s "$text" -i src -j
+
+# NOTE: slow response (~1.1s) -> TRY batch TL and reconstruct
+# WARN: sed|jshon pipe breaks when code!=200
+# WARN: translatedText may contain html tags
+#   TRY: sed -n '/^$/!{s/<[^>]*>//g;p;}' OR elinks OR w3m
