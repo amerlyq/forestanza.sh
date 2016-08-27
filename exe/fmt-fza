@@ -11,6 +11,7 @@ gsrc=${3:?}
 ysrc=${4:?}
 bsrc=${5:?}
 bysrc=${6:?}
+esrc=${7:?}
 
 SWD=$(realpath -e "${0%/*}")
 PATH=$SWD:$PATH
@@ -29,6 +30,7 @@ while
   IFS= read -r yline <&4
   IFS= read -r bline <&5
   IFS= read -r byline <&6
+  IFS= read -r eline <&7
 do
   ((n+=1))
   printf "\r%3d%% : %s" "$((100*n/N))" "$n/$N" >/dev/tty
@@ -40,6 +42,7 @@ do
   { printf "= [Y] "; "$mtl/yandex"/get-tran <<< "$yline"; }
   { printf "= [B] "; "$mtl/bing"/get-tran <<< "$bline"; }
   { printf "= [By] "; "$mtl/babylon"/get-tran <<< "$byline"; }
+  { printf "= [E] "; "$mtl/excite"/get-tran <<< "$eline"; }
 
   # TODO: sort wtbl by order of origin (1st index of the longest span)
   #   => attach indexes to get-wtbl, place into array in fmt-wtbl, print in END{}
@@ -48,7 +51,7 @@ do
   | column -t -s '|' -o ' | ' \
   | awk '$0="| "$0'
   echo
-done 3<"$gsrc" 4<"$ysrc" 5<"$bsrc" 6<"$bysrc"
+done 3<"$gsrc" 4<"$ysrc" 5<"$bsrc" 6<"$bysrc" 7<"$esrc"
 
 
 # BAD: read from pipe immediately closes it

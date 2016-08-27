@@ -79,13 +79,18 @@ $(O)/04-mtl-babylon/%.json: export LOG=$(O)/mtl-babylon.log
 $(O)/04-mtl-babylon/%.json :: $(O)/03-sentences/%.txt $(AUX)/mtl-one
 	map-guard mtl-one "$(AUX)/mtl/babylon" "$<" "$@"
 
+$(O)/04-mtl-excite/%.json: export LOG=$(O)/mtl-excite.log
+$(O)/04-mtl-excite/%.json :: $(O)/03-sentences/%.txt $(AUX)/mtl-one
+	map-guard mtl-one "$(AUX)/mtl/excite" "$<" "$@"
+
 $(call targs,5): $(call stage,5) : \
   $(O)/04-mtl-google/%.json \
   $(O)/04-mtl-yandex/%.json \
   $(O)/04-mtl-bing/%.json \
   $(O)/04-mtl-babylon/%.json \
+  $(O)/04-mtl-excite/%.json \
   $(AUX)/fmt-fza | $(call mkdir,5)
-	map-guard 2 fmt-fza "$@" -- $(wordlist 1,4,$^)
+	map-guard 2 fmt-fza "$@" -- $(wordlist 1,5,$^)
 
 
 # xhtml
