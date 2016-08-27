@@ -1,0 +1,41 @@
+#!/bin/bash -e
+set -o pipefail
+
+sid=$1
+num=${2:-0}
+
+SWD=$(realpath -e "${0%/*}")
+PATH=$SWD:${SWD%/*/*}:$PATH
+
+agent='Mozilla/5.0 (X11; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
+
+if [[ -z $sid ]]; then
+  curl -s "https://translate.yandex.com" \
+  | sed -rn "/.*SID:\s*'([^.']+)\.([^.']+)\.([^.']+)'.*/s//\1\n\2\n\3/p" \
+  | rev | paste -sd "." -
+  exit
+fi
+
+shift 2
+text=${*:-$([[ -t 0 ]]||ifne cat)}
+text=${text:?}
+sl=ja
+tl=en
+
+url="http://translate.yandex.net/api/v1/tr.json/translate?"
+url+="id=${sid}-${num}-0"
+url+="&srv=tr-text"
+url+="&lang=${sl}-${tl}"
+url+="&reason=auto"  # enter, cut, paste
+
+tos-limit-speed 100 1 <<< "$text"
+
+exec curl -s \
+  -H 'Accept-Encoding: gzip, deflate' \
+  -H 'Accept-Languages: en-US,en' \
+  -H 'Connection: close' \
+  -A "$agent" "$url" \
+  --data-urlencode "text=$text" \
+| gzip -dc --force | jshon -s "$text" -i src -j
+
+# TODO: if code!=200 -> return 'echo'

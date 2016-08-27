@@ -1,0 +1,16 @@
+#!/bin/bash -e
+
+src=${1:?}
+dst=${2:?}
+
+SWD=$(realpath -e "${0%/*}")
+PATH=$SWD:${SWD%/*/*}:$PATH
+
+sid=$("$SWD/query")
+[[ $sid ]]
+
+if [[ -s $dst ]]; then
+  ex-sync "$SWD/query $sid \$n" "$src" "$SWD/get-orig" "$dst"
+else
+  map-stdin "$src" "$SWD/query $sid \$n >> '$dst'"
+fi
