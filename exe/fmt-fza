@@ -5,32 +5,50 @@ trap 'echo >/dev/tty' EXIT
 
 # TODO:SEE: 'column' sources to align wide-char columns
 
-mtl=${1:?}
-src=${2:?}
-dst=${3:?}
+dst=${1:?}
+gsrc=${2:?}
+ysrc=${3:?}
 
 SWD=$(realpath -e "${0%/*}")
-PATH=$mtl:$SWD:$PATH
+PATH=$SWD:$PATH
 
-N=$(wc -l < "$src")
-n=0
+gwd=$SWD/mtl/google
+ywd=$SWD/mtl/yandex
 
 exec > "$dst"
+N=$(wc -l < "$gsrc")
+n=0
 
 while
-  IFS= read -r google <&3
+  IFS= read -r gline <&3
+  IFS= read -r yline <&4
 do
   ((n+=1))
   printf "\r%3d%% : %s" "$((100*n/N))" "$n/$N" >/dev/tty
 
   printf "%04d\n" "$n"
-  { printf "* "; get-orig <<< "$google" 3<&- 4<&-; }
-  { printf ": "; get-phon <<< "$google" 3<&- 4<&-; }
-  { printf "= "; get-tran <<< "$google" 3<&- 4<&-; }
+  { printf "* "; "$gwd"/get-orig <<< "$gline"; }
+  { printf ": "; "$gwd"/get-phon <<< "$gline"; }
+  { printf "= "; "$gwd"/get-tran <<< "$gline"; }
+
+  { printf "= "; "$ywd"/get-tran <<< "$yline"; }
+
   # TODO: sort wtbl by order of origin (1st index of the longest span)
   #   => attach indexes to get-wtbl, place into array in fmt-wtbl, print in END{}
-  get-wtbl <<< "$google" 3<&- 4<&- | fmt-wtbl \
+  "$gwd"/get-wtbl <<< "$gline" 3<&- 4<&- | "$gwd"/fmt-wtbl 3<&- 4<&- \
   | column -t -s '|' -o ' | ' | awk '$0="| "$0'
   echo
 
-done 3<"$src"
+done 3<"$gsrc" 4<"$ysrc"
+
+
+# BAD: read from pipe immediately closes it
+#   http://unix.stackexchange.com/questions/81763/problem-with-pipes-pipe-terminates-when-reader-done
+# mkff(){ local pipe=/tmp/$1 src=$2
+#   [[ $pipe ]] && rm "$pipe"
+#   mkfifo "$pipe"
+#   (cat > "$pipe" < "$src")
+# }
+# mkff google "$src"
+# # TODO: kill all jobs (can't wait fifo!)
+# trap 'kill $(jobs -p) 2>/dev/null; exit 1' TERM KILL QUIT INT

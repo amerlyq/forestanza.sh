@@ -33,8 +33,11 @@ stage = $(word $(1),$(CHAIN))
 mkdir = $(call dirnm,$(call stage,$(1)))
 targs = $(TARGS:%=$(call stage,$(1)))
 
-# all: $(call targs,6)
-all: $(TARGS:%=$(O)/04-mtl-baidu/%.json)
+all: $(call targs,6)
+# all: $(TARGS:%=$(O)/04-mtl-baidu/%.json)
+
+# DEV:(target) check:
+# 	force TL for chapters -> sync damage/differences
 
 $(O) $(foreach t,$(CHAIN),$(call dirnm,$t)): ; mkdir -p "$@"
 
@@ -64,8 +67,15 @@ $(O)/04-mtl-baidu/%.json: export LOG=$(O)/mtl-baidu.log
 $(O)/04-mtl-baidu/%.json :: $(O)/03-sentences/%.txt $(AUX)/mtl-one
 	map-guard mtl-one "$(AUX)/mtl/baidu" "$<" "$@"
 
-$(call targs,5): $(call stage,5) : $(call stage,4) $(AUX)/fmt-fza | $(call mkdir,5)
-	map-guard fmt-fza "$(AUX)/mtl/google" "$<" "$@"
+$(O)/04-mtl-yandex/%.json: export LOG=$(O)/mtl-yandex.log
+$(O)/04-mtl-yandex/%.json :: $(O)/03-sentences/%.txt $(AUX)/mtl/yandex/mtl
+	map-guard "$(AUX)"/mtl/yandex/mtl "$<" "$@"
+
+$(call targs,5): $(call stage,5) : \
+  $(O)/04-mtl-google/%.json \
+  $(O)/04-mtl-yandex/%.json \
+  $(AUX)/fmt-fza | $(call mkdir,5)
+	map-guard 2 fmt-fza "$@" $(wordlist 1,2,$^)
 
 
 # xhtml

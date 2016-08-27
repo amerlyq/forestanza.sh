@@ -51,9 +51,9 @@ def section(sec):
     # self.synxhtml.pygment_origin(escape(orig.strip()))
     fmt = {}
     fmt['idx'] = sec['idx']
-    fmt['orig'] = '\n'.join(escape(sec['orig']))
-    fmt['phon'] = '\n'.join(escape(sec['phon']))
-    fmt['tran'] = '\n'.join(escape(sec['tran']))
+    fmt['orig'] = '<br/>\n'.join(escape(sec['orig']))
+    fmt['phon'] = '<br/>\n'.join(escape(sec['phon']))
+    fmt['tran'] = '<br/>\n'.join(escape(sec['tran']))
     fmt['wtbl'] = ''.join([tmpl_wtable.format(*escape(row))
                            for row in sec['wtbl']])
     return tmpl_section.format(**fmt)
@@ -82,7 +82,7 @@ def parse(f):
             elif line[0:1] in ': ':
                 sec['phon'].append(line[2:])
             elif line[0:1] in '= ':
-                sec['tran'].append(line[2:])
+                sec['tran'].append('* ' + line[2:])
             elif line[0:1] in '| ':
                 sec['wtbl'].append(re.split('\s*\|\s*', line[2:], 1))
         if sec['orig']:

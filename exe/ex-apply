@@ -7,10 +7,11 @@ dst=${2:?}
 
 PATH=$(realpath -e "${0%/*}"):$PATH
 
-while read -r ex t; do
+n=0
+while read -r ex t; do ((n+=1))
   printf "%s " "${ex%[ad]}" >/dev/tty
   if [[ $t ]]
-  then printf "%s\n%s\n.\nwq\n" "$ex" "$($cmd "$t")"
+  then printf "%s\n%s\n.\nwq\n" "$ex" "$(eval "$cmd" <<< "$t")"
   else printf "%s\nwq\n" "$ex"
   fi | ex - "$dst"
 done
