@@ -71,11 +71,16 @@ $(O)/04-mtl-yandex/%.json: export LOG=$(O)/mtl-yandex.log
 $(O)/04-mtl-yandex/%.json :: $(O)/03-sentences/%.txt $(AUX)/mtl/yandex/mtl
 	map-guard "$(AUX)"/mtl/yandex/mtl "$<" "$@"
 
+$(O)/04-mtl-bing/%.json: export LOG=$(O)/mtl-bing.log
+$(O)/04-mtl-bing/%.json :: $(O)/03-sentences/%.txt $(AUX)/mtl/bing/mtl
+	map-guard "$(AUX)"/mtl/bing/mtl "$<" "$@"
+
 $(call targs,5): $(call stage,5) : \
   $(O)/04-mtl-google/%.json \
   $(O)/04-mtl-yandex/%.json \
+  $(O)/04-mtl-bing/%.json \
   $(AUX)/fmt-fza | $(call mkdir,5)
-	map-guard 2 fmt-fza "$@" $(wordlist 1,2,$^)
+	map-guard 2 fmt-fza "$@" $(wordlist 1,3,$^)
 
 
 # xhtml

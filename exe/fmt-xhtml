@@ -26,9 +26,9 @@ tmpl_end = """
 
 tmpl_section = """
 <h3 id="s{idx:04d}">{idx:04d}</h3>
+<p class="transl">\n  {tran}\n</p>
 <p class="origin">\n  {orig}\n</p>
 <p class="phonet">\n  {phon}\n</p>
-<p class="transl">\n  {tran}\n</p>
 <table class="table"><tbody>\n{wtbl}</tbody></table><br/>
 """
 

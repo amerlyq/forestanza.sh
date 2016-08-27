@@ -1,0 +1,4 @@
+#!/bin/bash -e
+set -o pipefail
+
+jshon -Q -e items -a -e text -u | paste -sd ''

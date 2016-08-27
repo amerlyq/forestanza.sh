@@ -10,7 +10,7 @@ PATH=$SWD:${SWD%/*/*}:$PATH
 agent='Mozilla/5.0 (X11; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
 
 if [[ -z $sid ]]; then
-  curl -s "https://translate.yandex.com" \
+  curl -s -A "$agent" "https://translate.yandex.com" \
   | sed -rn "/.*SID:\s*'([^.']+)\.([^.']+)\.([^.']+)'.*/s//\1\n\2\n\3/p" \
   | rev | paste -sd "." -
   exit
@@ -38,4 +38,5 @@ exec curl -s \
   --data-urlencode "text=$text" \
 | gzip -dc --force | jshon -s "$text" -i src -j
 
-# TODO: if code!=200 -> return 'echo'
+# TODO: if code!=200 -> return empty 'echo'
+#   => DONE as filter in get-orig

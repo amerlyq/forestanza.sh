@@ -1,0 +1,41 @@
+#!/bin/bash -e
+set -o pipefail
+
+cookie=$1
+
+SWD=$(realpath -e "${0%/*}")
+PATH=$SWD:${SWD%/*/*}:$PATH
+
+agent='Mozilla/5.0 (X11; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
+
+if [[ ! -s $cookie ]]; then
+  cookie=$(mktemp --dry-run "${TMPDIR:-/tmp}/bing.XXXXX")
+  curl -s \
+    -H 'Host: www.bing.com' \
+    -H 'Connection: close' \
+    -A "$agent" "http://www.bing.com/translator" \
+    --cookie-jar "$cookie" >/dev/null
+  echo "$cookie"
+  exit
+fi
+
+shift 1
+text=${*:-$([[ -t 0 ]]||ifne cat)}
+text=${text:?}
+sl=ja
+tl=en
+
+url="http://www.bing.com/translator/api/Translate/TranslateArray?"
+url+="&from=${sl}&to=${tl}"
+
+tos-limit-speed 100 1 <<< "$text"
+
+exec curl -s --cookie "$cookie" \
+  -H 'Host: www.bing.com' \
+  -H 'Accept-Encoding: gzip, deflate' \
+  -H 'Accept-Languages: en-US,en' \
+  -H 'Content-Type: application/json' \
+  -H 'Connection: close' \
+  -A "$agent" "$url" \
+  --data "$(echo '[{}]' | jshon -e0 -s "$text" -i text -p -j)" \
+| gzip -dc --force | jshon -s "$text" -i src -j

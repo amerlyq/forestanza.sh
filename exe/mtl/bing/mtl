@@ -1,0 +1,17 @@
+#!/bin/bash -e
+
+src=${1:?}
+dst=${2:?}
+
+SWD=$(realpath -e "${0%/*}")
+PATH=$SWD:${SWD%/*/*}:$PATH
+
+cookie=$("$SWD/query")
+[[ -s $cookie ]]
+trap "rm -f '$cookie'" TERM KILL QUIT INT EXIT
+
+if [[ -s $dst ]]; then
+  ex-sync "$SWD/query $cookie" "$src" "$SWD/get-orig" "$dst"
+else
+  map-stdin "$src" "$SWD/query $cookie >> '$dst'"
+fi
