@@ -1,4 +1,4 @@
 #!/bin/bash -e
 set -o pipefail
 
-jshon -Q -e data -a -e src -u
+jshon -Q -e data -a -e dst -u | paste -sd ''

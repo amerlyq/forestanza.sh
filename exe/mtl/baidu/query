@@ -12,13 +12,22 @@ PATH=$SWD:${SWD%/*/*}:$PATH
 agent='Mozilla/5.0 (X11; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
 
 url="http://translate.baidu.com/transcontent?"
-url+="source=txt&ie=utf-8"
-url+="&from=$sl&to=$tl"
+url+="monLang=en"
 
-tos-limit-speed 100 1 <<< "$text"
+# tos-limit-speed 100 1 <<< "$text"
 
-exec curl -s \
+# ATT: even from web-page:
+#  * ja-en max len: 34 -> then returns timeout only
+#  * ping is too big
+
+exec curl -v \
   -H 'Accept-Encoding: gzip, deflate' \
   -H 'Accept-Languages: en-US,en' \
-  -A "$agent" "$url" --data-urlencode "query=$text" \
+  -H 'Connection: close' \
+  -A "$agent" "$url" \
+  --data-urlencode "from=$sl" \
+  --data-urlencode "to=$tl" \
+  --data-urlencode "ie=utf-8" \
+  --data-urlencode "source=txt" \
+  --data-urlencode "query=$text" \
 | { gzip -dc --force; echo; }
