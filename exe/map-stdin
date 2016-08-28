@@ -9,6 +9,8 @@ shift
 N=$(wc -l < "$src")
 n=0
 
+# BAD: progressbar breaks on 'make -j9'
+
 while IFS= read -r line; do ((n+=1))
   printf "\r%3d%% : %s" "$((100*n/N))" "$n/$N" >/dev/tty
   eval "$@" <<< "$line"

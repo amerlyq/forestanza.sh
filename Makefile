@@ -91,11 +91,10 @@ $(call targs,5): $(call stage,5) : \
   $(O)/04-mtl-google/%.json \
   $(O)/04-mtl-yandex/%.json \
   $(O)/04-mtl-bing/%.json \
-  $(O)/04-mtl-babylon/%.json \
   $(O)/04-mtl-excite/%.json \
   $(O)/04-mtl-freesdl/%.json \
   $(AUX)/fmt-fza | $(call mkdir,5)
-	map-guard 2 fmt-fza "$@" -- $(wordlist 1,6,$^)
+	map-guard 2 fmt-fza "$@" -- $(wordlist 1,5,$^)
 
 
 # xhtml

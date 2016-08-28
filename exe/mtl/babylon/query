@@ -1,6 +1,8 @@
 #!/bin/bash -e
 set -o pipefail
 
+# NOTE: duplicates 'freesdl'
+
 SWD=$(realpath -e "${0%/*}")
 PATH=$SWD:${SWD%/*/*}:$PATH
 

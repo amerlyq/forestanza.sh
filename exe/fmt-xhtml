@@ -82,7 +82,8 @@ def parse(f):
             elif line[0:1] in ': ':
                 sec['phon'].append(line[2:])
             elif line[0:1] in '= ':
-                sec['tran'].append('* ' + line[2:])
+                # TODO: colorize [\w] prefix -- split line on first space
+                sec['tran'].append(line[2:])
             elif line[0:1] in '| ':
                 sec['wtbl'].append(re.split('\s*\|\s*', line[2:], 1))
         if sec['orig']:

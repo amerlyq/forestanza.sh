@@ -44,4 +44,3 @@ exec curl -s \
 }
 
 # NOTE: very slow response (>1.3s) -> TRY batch TL and reconstruct
-# NEED: decode &quot; etc before usage in fza
