@@ -12,6 +12,7 @@ ysrc=${4:?}
 bsrc=${5:?}
 bysrc=${6:?}
 esrc=${7:?}
+fsrc=${8:?}
 
 SWD=$(realpath -e "${0%/*}")
 PATH=$SWD:$PATH
@@ -31,6 +32,7 @@ while
   IFS= read -r bline <&5
   IFS= read -r byline <&6
   IFS= read -r eline <&7
+  IFS= read -r fline <&8
 do
   ((n+=1))
   printf "\r%3d%% : %s" "$((100*n/N))" "$n/$N" >/dev/tty
@@ -41,6 +43,7 @@ do
   { printf "= [B] "; "$mtl/bing"/get-tran <<< "$bline"; }
   { printf "= [By] "; "$mtl/babylon"/get-tran <<< "$byline"; }
   { printf "= [E] "; "$mtl/excite"/get-tran <<< "$eline"; }
+  { printf "= [F] "; "$mtl/freesdl"/get-tran <<< "$fline"; }
   { printf "* "; "$gwd"/get-orig <<< "$gline"; }
   { printf ": "; "$gwd"/get-phon <<< "$gline"; }
 
@@ -51,7 +54,7 @@ do
   | column -t -s '|' -o ' | ' \
   | awk '$0="| "$0'
   echo
-done 3<"$gsrc" 4<"$ysrc" 5<"$bsrc" 6<"$bysrc" 7<"$esrc"
+done 3<"$gsrc" 4<"$ysrc" 5<"$bsrc" 6<"$bysrc" 7<"$esrc" 8<"$fsrc"
 
 
 # BAD: read from pipe immediately closes it

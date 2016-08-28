@@ -1,0 +1,32 @@
+#!/bin/bash -e
+set -o pipefail
+
+SWD=$(realpath -e "${0%/*}")
+PATH=$SWD:${SWD%/*/*}:$PATH
+
+agent='Mozilla/5.0 (X11; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
+
+text=${*:-$([[ -t 0 ]]||ifne cat)}
+text=${text:?}
+sl=jpn
+tl=eng
+
+url="https://www.freetranslation.com/"
+url+="gw-mt-proxy-service-web/mt-translation"
+
+tos-limit-speed 100 1 <<< "$text"
+
+appkey='dlWbNAC2iLJWujbcIHiNMQ%3D%3D'
+
+data=$(od -An -tx1 <<< "$text" | sed 's/ /%/g; s/[a-f]/\U&/g' | tr -d '\n')
+data=$(printf '{"from":"%s","to":"%s"}' "$sl" "$tl" | jshon -s "$data" -i text -j)
+
+exec curl -s \
+  -H 'Host: www.freetranslation.com' \
+  -H "Tracking: applicationKey=${appkey:?} applicationInstance=freetranslation" \
+  -H 'Accept-Languages: en-US,en' \
+  -H 'Accept-Encoding: gzip, deflate' \
+  -H 'Content-Type: application/json' \
+  -A "$agent" "$url" \
+  --data "$data" \
+| gzip -dc --force | jshon -s "$text" -i src -j
