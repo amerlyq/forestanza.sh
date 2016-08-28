@@ -1,0 +1,52 @@
+#!/bin/bash -e
+set -o pipefail
+
+SWD=$(realpath -e "${0%/*}")
+PATH=$SWD:${SWD%/*/*}:$PATH
+
+agent='Mozilla/5.0 (X11; Linux x86_64; rv:40.0) Gecko/20100101 Firefox/40.0'
+
+text=${*:-$([[ -t 0 ]]||ifne cat)}
+text=${text:?}
+
+# NOTE:(limitation) src|dst must be Japanese!
+sl=ja
+tl=en
+
+url="http://honyaku.yahoo.co.jp/TranslationText"
+# ALT:(html-response)
+# url="http://honyaku.yahoo.co.jp/transtext?"
+# url+="both=TH&eid=CR-JE&text=%s"
+# curl 'http://honyaku.yahoo.co.jp/transtext?both=TH&eid=CR-JE&text=拳を握り固めて、自身の胸中に高揚感があるのを自覚しながら、'
+
+tos-limit-speed 100 1 <<< "$text"
+
+# 204 No Content
+exec curl -v \
+  -H 'Accept: application/json, text/javascript, */*; q=0.01' \
+  -H 'Host: honyaku.yahoo.co.jp' \
+  -H 'Accept-Encoding: gzip, deflate' \
+  -H 'Accept-Language: en-US,en' \
+  -H 'Cookie: B=7i6tv8pbs4mbl&b=3&s=dp' \
+  -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
+  -A "$agent" "$url" \
+  --data-urlencode "ieid=${sl}" \
+  --data-urlencode "oeid=${tl}" \
+  --data-urlencode "output=json" \
+  --data-urlencode "results=1000" \
+  --data-urlencode "formality=0" \
+  --data-urlencode "_crumb:    yGpBr6opBtTcu26TxmJiywTRWeRUUzZ2v3LaRfVmvpTdzjr4Jj2r0dHqpHSbbQFvDueE1xyj..lTREbdNaPjz9gVVboOdA--" \
+  --data-urlencode "p=$text" \
+# | gzip -dc --force \
+# | sed -rn '
+#   /^.*<textarea.* name="after".*>(.*)<\/textarea>$/s//\1/{
+#     s/&quot;/"/g
+#     s/&lt;/</g
+#     s/&gt;/>/g
+#     s/&amp;/\&/g
+#   p;q}
+# ' | { rsp=$(cat)
+#   echo '{}' | jshon -s "$rsp" -i text -s "$text" -i src -j
+# }
+
+# NOTE: very slow response (>1.3s) -> TRY batch TL and reconstruct
