@@ -13,7 +13,7 @@ my %wtbl;
 
 # Sort single phrase parts by origin indexes
 sub ipairs($$) { my @p;
-    my @words = split /\s+/, $_[0];
+    my @words = reverse split(/\s+/, $_[0]);
     my @numbers = $_[1] =~ /\d+/g;
 
     # FIXED BUG 117:3:19-25 has coords as single word => len @o > len @p
@@ -33,7 +33,7 @@ sub ipairs($$) { my @p;
             $k -= length $w;
         }
 
-        push @p, [$pos, $len, join("·", reverse @wrds)];
+        push @p, [$pos, $len, join("·", @wrds)];
     }
     # ALT map { [$numbers[2*$_], $numbers[2*$_+1] - $numbers[2*$_]] } (0 .. scalar(@numbers)/2-1);
     return sort { $a->[0] <=> $b->[0] } (@p)
@@ -45,16 +45,25 @@ while(<>) {
     # print dump(@p),"\n";
 
     # Find index for main part of phrase
-    # CHECK may provide wrong order for mixed non-splitted phrases
-    my ($key, $max) = (65536, 0);
+    #   * with kanji
+    #   * longest word
+    #   * ignore [:punct:] in word's length
+    # BAD BUT may provide wrong order
+    # ! rarely non-reversed order of words in phrase (rezero:138:{1,2}:1)
+    # ! punct glued to words -- wrong rows order (rezero:138:21:1)
+    #   :: +trimmed punct by get-wtbl, +non-reversed order
+
+    my ($key, $max) = (65536, -1);
     my @pp = grep { $_->[2] =~ /[\u3400-\u9faf]/ } @p;
     @pp = @p if not @pp;
     foreach (@pp) {
-        next if $_->[1] <= $max;
+        my $len = length($_->[2] =~ s/[[:punct:]]//gr);
+        next if $len <= $max;
         $key = $_->[0];
-        $max = $_->[1];
+        $max = $len;
         # print dump($len),"\n";
     }
+    # print dump($key,@p),"\n";
 
     my $s = "";
     my $n = <>; #chomp $n;
@@ -63,14 +72,16 @@ while(<>) {
         $s .= ($i ? ", " : "") . $_ if($w+0 > $th);
     }
     # Don't include lines without meaningful words
-    if (@p and $s =~ /\w/) {
-        my $o = join(" ", map { $_->[2] } @p);
+    if (@p) {
+        my $o = ($s !~ /\w/) ? '-'x10 : join(" ", map { $_->[2] } @p);
         # print dump($o),"\n";
         $wtbl{$key} = $o . "|" . $s;
     }
 }
 
 # Sort all phrases by origin indexes of main part
-foreach (sort {$a <=> $b} keys %wtbl) {
-    print $wtbl{$_},"\n";
-}
+my @wlst = @wtbl{sort {$a <=> $b} keys %wtbl};
+# Remove excessive separators
+shift @wlst if @wlst and $wlst[0] =~ /^-+\|/;
+pop @wlst if @wlst and $wlst[-1] =~ /^-+\|/;
+print $_,"\n" foreach (@wlst);

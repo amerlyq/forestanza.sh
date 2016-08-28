@@ -32,8 +32,16 @@ exec curl -s \
   --data-urlencode "auto_detect=off" \
   --data-urlencode "before=$text" \
 | gzip -dc --force \
-| sed -rn '/^.*<textarea.* name="after".*>(.*)<\/textarea>$/s//\1/p' \
-| { rsp=$(cat); echo '{}' | jshon -s "$rsp" -i text -s "$text" -i src -j; }
+| sed -rn '
+  /^.*<textarea.* name="after".*>(.*)<\/textarea>$/s//\1/{
+    s/&quot;/"/g
+    s/&lt;/</g
+    s/&gt;/>/g
+    s/&amp;/\&/g
+  p;q}
+' | { rsp=$(cat)
+  echo '{}' | jshon -s "$rsp" -i text -s "$text" -i src -j
+}
 
 # NOTE: very slow response (>1.3s) -> TRY batch TL and reconstruct
 # NEED: decode &quot; etc before usage in fza

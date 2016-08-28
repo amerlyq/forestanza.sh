@@ -36,13 +36,13 @@ do
   printf "\r%3d%% : %s" "$((100*n/N))" "$n/$N" >/dev/tty
 
   printf "%04d\n" "$n"
-  { printf "* "; "$gwd"/get-orig <<< "$gline"; }
-  { printf ": "; "$gwd"/get-phon <<< "$gline"; }
   { printf "= [G] "; "$gwd"/get-tran <<< "$gline"; }
   { printf "= [Y] "; "$mtl/yandex"/get-tran <<< "$yline"; }
   { printf "= [B] "; "$mtl/bing"/get-tran <<< "$bline"; }
   { printf "= [By] "; "$mtl/babylon"/get-tran <<< "$byline"; }
   { printf "= [E] "; "$mtl/excite"/get-tran <<< "$eline"; }
+  { printf "* "; "$gwd"/get-orig <<< "$gline"; }
+  { printf ": "; "$gwd"/get-phon <<< "$gline"; }
 
   # TODO: sort wtbl by order of origin (1st index of the longest span)
   #   => attach indexes to get-wtbl, place into array in fmt-wtbl, print in END{}
