@@ -1,4 +1,4 @@
 #!/bin/bash -e
 set -o pipefail
 
-jshon -Q -e items -a -e text -u | paste -sd ''
+jshon -Q -e items -a -e text -u | awk '{$1=$1};1' | paste -sd ''

@@ -1,4 +1,4 @@
 #!/bin/bash -e
 set -o pipefail
 
-jshon -Q -e translatedText -u | paste -sd ''
+jshon -Q -e translatedText -u | awk '{$1=$1};1' | paste -sd ''
