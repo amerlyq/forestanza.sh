@@ -11,6 +11,7 @@ function storePos() {
 }
 
 function loadPos() {
+    if (this.scrollTimeout) { return; }
     var pos = localStorage.getItem(scrollStorageKey);
     if (typeof pos == 'undefined') { return; }
     var h = (document.height || document.body.offsetHeight);

@@ -33,7 +33,8 @@ exec curl -s \
   --data-urlencode "before=$text" \
 | gzip -dc --force \
 | sed -rn '
-  /^.*<textarea.* name="after".*>(.*)<\/textarea>$/s//\1/{
+  /^.*<textarea.* name="after".*>(.*)<\/textarea>$/{
+    s//\1/
     s/&quot;/"/g
     s/&lt;/</g
     s/&gt;/>/g
