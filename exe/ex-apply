@@ -26,3 +26,4 @@ echo >/dev/tty
 #   { diff -ew ...; echo %p; } | ex - "$dst"
 #   ALT:(-w) <(sed -r 's/^\s+|\s+$//g' "$src")
 #   ALT:(ex) sed '1,3c\固い地'
+#   OR:TRY: { diff -ew ...; echo %p; } | patch --ed -o-

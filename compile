@@ -1,5 +1,5 @@
 #!/bin/bash -e
 RNG=$*
-[[ $RNG ]] || RNG=142
+[[ $RNG ]] || RNG=117
 export MAKEFLAGS="-j$(( $(nproc) + 1 ))"
 exec make RNG="$RNG"
