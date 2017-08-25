@@ -1,6 +1,9 @@
 .DEFAULT_GOAL := all
 .SUFFIXES:
 
+# IDEA: ln -sv $(PWD)/_build ~/build/forestanza
+# => move long-build data outside to easily delete or move between systems
+
 MWD := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 AUX := $(MWD)/exe
 RES := $(MWD)/res
