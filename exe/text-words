@@ -8,6 +8,8 @@ binmode (STDOUT, ':utf8');
 # orig="* 声を掛けたくても、なにを言っていいのか、そして言葉の作り方がわからない。"
 # phon=": Koe o kaketakute mo, nani o itte ī no ka, soshite kotoba no tsukurikata ga wakaranai."
 
+# TRY: Text::Balanced, Text::ParseWords
+
 my $orig = "* カウンターの向こうでカドモンが慌てた素振りで両手を上げたり下げたりしている。";
 my $phon = ": Kauntā no mukō de kadomon ga awateta soburi de ryōte o agetarisagetari shite iru.";
 # $orig =~ s/[^ぁ-ゖ]+/.+/g;
